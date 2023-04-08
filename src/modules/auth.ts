@@ -1,4 +1,13 @@
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
+ export const comparePasswords = (password, hashedPassword) => {
+  return bcrypt.compare(password, hashedPassword);
+};
+
+export const hashThePassword = (password) => {
+  return bcrypt.hash(password,10);
+};
 
 export const createJWT = (user) => {
   const token = jwt.sign(
@@ -8,7 +17,7 @@ export const createJWT = (user) => {
   return token;
 };
 
-export const protect = (req, res,next) => {
+export const protect = (req, res, next) => {
   const bearer = req.headers.authorization;
 
   //check if any bearer exists
@@ -19,7 +28,7 @@ export const protect = (req, res,next) => {
   }
 
   //first deconstructed is bearer which is not necessary, but second is token
-  const [, token] = bearer.split(""); //"Bearer tokenInTheSecondPart"
+  const [, token] = bearer.split(' '); //"Bearer tokenInTheSecondPart"
 
   if (!token) {
     res.status(401);
@@ -29,11 +38,12 @@ export const protect = (req, res,next) => {
 
   try {
     const user = jwt.verify(token, process.env.JWT_SECRET);
+    console.log(user);
     req.user = user;
-    next()
+    next();
   } catch (e) {
-    res.status(401)
-    res.json({message:"Not valid token"})
-    return
+    res.status(401);
+    res.json({ message: "Not valid token!" });
+    return;
   }
 };
